@@ -57,7 +57,7 @@ int main(int argc, char **argv)
 
 ### Create the bindings:
 
-  ####  ecore_evas.ml
+####  ecore_evas.ml
 
 ```ocaml
 open Ctypes
