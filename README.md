@@ -157,3 +157,54 @@ let ecore_evas_title_set =
 let ee = ecore_evas_new None 50 50 300 300 None in
 ecore_evas_title_set ee (Some "This is a test");
 ```
+
+#### create a view for a bool type.
+
+In the EFL, there is are boolean value `EINA_TRUE` which is an integer equal to
+one and `EINA_FALSE` whose value is 0. The idea is to bind those values to the
+`true` and `false` boolean values of OCaml.
+
+For this I will use  a "view". The `Ctypes.view` function create a new C type
+descriptions with the instructions to be used when OCaml read or write those
+kind of C values.
+
+*  example with the Ctypes.string :
+
+```
+let string =
+  view
+  (char ptr)
+  ~read:string_of_char_ptr
+  ~write:char_ptr_of_string
+```
+
+*  boolean value which can be 0 (false) or 1 (true):
+
+```
+let bool =
+   view
+   int
+   ~read:((<>)0)
+   ~write:(fun b -> compare b false)
+```
+
+*  in the ecore_evas.ml
+
+```
+let eina_bool =
+  view ~read:((<>) 0) ~write:(fun b -> compare b false) int
+
+let ecore_evas_init =
+  foreign "ecore_evas_init" (void @-> returning eina_bool)
+let ecore_evas_shutdown =
+  foreign "ecore_evas_shutdown" (void @-> returning eina_bool)
+
+let ecore_evas_alpha_set =
+  foreign "ecore_evas_alpha_set" (ecore_evas @-> eina_bool @-> returning void)
+```
+
+* Usage in the ecore_evas_window.ml:
+
+```
+  ecore_evas_alpha_set ee true;
+```
