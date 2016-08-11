@@ -1,0 +1,16 @@
+### Starting build.
+# Target: ecore_evas_window.ml.depends, tags: { bin_annot, debug, extension:ml, file:ecore_evas_window.ml, ocaml, ocamldep, package(core), package(ctypes.foreign), ppx(ppx-jane -as-ppx), quiet, short_paths, thread }
+ocamlfind ocamldep -package ctypes.foreign -package core -ppx 'ppx-jane -as-ppx' -modules ecore_evas_window.ml > ecore_evas_window.ml.depends
+# Target: ecore_evas.ml.depends, tags: { bin_annot, debug, extension:ml, file:ecore_evas.ml, ocaml, ocamldep, package(core), package(ctypes.foreign), ppx(ppx-jane -as-ppx), quiet, short_paths, thread }
+ocamlfind ocamldep -package ctypes.foreign -package core -ppx 'ppx-jane -as-ppx' -modules ecore_evas.ml > ecore_evas.ml.depends # cached
+# Target: ecore_evas.cmo, tags: { bin_annot, byte, compile, debug, extension:cmo, extension:ml, file:ecore_evas.cmo, file:ecore_evas.ml, implem, ocaml, package(core), package(ctypes.foreign), ppx(ppx-jane -as-ppx), quiet, short_paths, thread }
+ocamlfind ocamlc -c -w A-4-33-40-41-42-43-34-44 -strict-sequence -g -bin-annot -short-paths -thread -package ctypes.foreign -package core -ppx 'ppx-jane -as-ppx' -o ecore_evas.cmo ecore_evas.ml # cached
+# Target: ecore_evas_window.cmo, tags: { bin_annot, byte, compile, debug, extension:cmo, extension:ml, file:ecore_evas_window.cmo, file:ecore_evas_window.ml, implem, ocaml, package(core), package(ctypes.foreign), ppx(ppx-jane -as-ppx), quiet, short_paths, thread }
+ocamlfind ocamlc -c -w A-4-33-40-41-42-43-34-44 -strict-sequence -g -bin-annot -short-paths -thread -package ctypes.foreign -package core -ppx 'ppx-jane -as-ppx' -o ecore_evas_window.cmo ecore_evas_window.ml
+# Target: ecore_evas.cmx, tags: { bin_annot, compile, debug, extension:cmx, extension:ml, file:ecore_evas.cmx, file:ecore_evas.ml, implem, native, ocaml, package(core), package(ctypes.foreign), ppx(ppx-jane -as-ppx), quiet, short_paths, thread }
+ocamlfind ocamlopt -c -w A-4-33-40-41-42-43-34-44 -strict-sequence -g -bin-annot -short-paths -thread -package ctypes.foreign -package core -ppx 'ppx-jane -as-ppx' -o ecore_evas.cmx ecore_evas.ml
+# Target: ecore_evas_window.cmx, tags: { bin_annot, compile, debug, extension:cmx, extension:ml, file:ecore_evas_window.cmx, file:ecore_evas_window.ml, implem, native, ocaml, package(core), package(ctypes.foreign), ppx(ppx-jane -as-ppx), quiet, short_paths, thread }
+ocamlfind ocamlopt -c -w A-4-33-40-41-42-43-34-44 -strict-sequence -g -bin-annot -short-paths -thread -package ctypes.foreign -package core -ppx 'ppx-jane -as-ppx' -o ecore_evas_window.cmx ecore_evas_window.ml
+# Target: ecore_evas_window.native, tags: { bin_annot, debug, dont_link_with, extension:native, file:ecore_evas_window.native, link, native, ocaml, package(core), package(ctypes.foreign), ppx(ppx-jane -as-ppx), program, quiet, short_paths, thread }
+ocamlfind ocamlopt -cclib -lecore_evas -cclib -lecore -linkpkg -g -thread -package ctypes.foreign -package core ecore_evas.cmx ecore_evas_window.cmx -o ecore_evas_window.native
+# Compilation successful.

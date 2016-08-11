@@ -140,3 +140,20 @@ Previously when I needed to pass a C `char *` I used in the OCaml bindings both
 `char ptr` and `string`. That is because I wanted to use Null pointers in the
 function `ecore_evas_new`. In Ctypes there is the type `string_opt` which can
 support a pointer of char and a Null pointer.
+
+*  in ecore_evas.ml
+
+```
+let ecore_evas_new =
+  foreign "ecore_evas_new" (string_opt @-> int @-> int @-> int @-> int @-> string_opt @-> returning ecore_evas)
+
+let ecore_evas_title_set =
+  foreign "ecore_evas_title_set" (ecore_evas @-> string_opt @-> returning void)
+```
+
+*  in ecore_evas_window.ml
+
+```
+let ee = ecore_evas_new None 50 50 300 300 None in
+ecore_evas_title_set ee (Some "This is a test");
+```
