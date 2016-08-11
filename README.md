@@ -5,6 +5,8 @@ the book Real World OCaml, the authors use the library NCurse as example.
 
 Here I use Ecore / Evas from the [Enlightenment Libraries](https://www.enlightenment.org/) know as E.F.L.
 
+## Presentation of the C library.
+
 ### The C functions to use :
 
   * void ecore_main_loop_quit(void)
@@ -18,6 +20,8 @@ Here I use Ecore / Evas from the [Enlightenment Libraries](https://www.enlighten
   * ecore_evas_free(ee);
 
 ### The code to reproduce
+
+It is just a little transparent window.
 
 ```c
 /* Compile with:
@@ -55,9 +59,11 @@ int main(int argc, char **argv)
 }
 ```
 
-### Create the bindings:
+## Create the OCaml bindings:
 
-####  ecore_evas.ml
+###  The Ecore_evas module : simple implementation
+
+*  ecore_evas.ml
 
 ```ocaml
 open Ctypes
@@ -77,32 +83,29 @@ let ecore_evas : ecore_evas typ = ptr void
 
 let ecore_evas_new =
   foreign "ecore_evas_new" (ptr char @-> int @-> int @-> int @-> int @-> ptr char @-> returning ecore_evas)
-
 let ecore_evas_title_set =
   foreign "ecore_evas_title_set" (ecore_evas @-> string @-> returning void)
-
 let ecore_evas_show =
   foreign "ecore_evas_show" (ecore_evas @-> returning void)
-
 let ecore_evas_free =
   foreign "ecore_evas_free" (ecore_evas @-> returning void)
-
 let ecore_evas_alpha_set =
   foreign "ecore_evas_alpha_set" (ecore_evas @-> int @-> returning void)
 ```
-#### Create the module interface
+
+We generate the module interface file from the module.
 
 ```bash
 corebuild -pkg ctypes.foreign ecore_evas.inferred.mli
 cp _build/ecore_evas.inferred.mli ./
 ```
 
-### The main ocaml file
+#### The main ocaml file
 
 ```ocaml
 open Ecore_evas
-
 open Ctypes
+
 let initialize_subsystem () =
   if (ecore_evas_init () != 0) then
     print_endline "Ecore Evas initialized"
@@ -122,9 +125,18 @@ let  () =
   ignore(ecore_evas_shutdown ())
 ```
 
-#### Build and run
+This file can be build and run with:
 
 ```bash
 corebuild -pkg ctypes.foreign -lflags -cclib,-lecore_evas -lflags -cclib,-lecore ecore_evas_window.native
 ./ecore_evas_window.native
 ```
+
+### The Ecore_evas module :  a more subtle implementation:
+
+#### the string_opt type
+
+Previously when I needed to pass a C `char *` I used in the OCaml bindings both
+`char ptr` and `string`. That is because I wanted to use Null pointers in the
+function `ecore_evas_new`. In Ctypes there is the type `string_opt` which can
+support a pointer of char and a Null pointer.
