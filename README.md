@@ -208,3 +208,89 @@ let ecore_evas_alpha_set =
 ```
   ecore_evas_alpha_set ee true;
 ```
+It exits an internal bool representation :
+*  https://github.com/ocamllabs/ocaml-ctypes/issues/24
+*  https://github.com/ocamllabs/ocaml-ctypes/commit/d662070db22b99c74879c01da8db54bedc270e8b
+
+### The Ecore_evas module: C stubs generation and static bindings.
+
+resources :
+*  http://simonjbeaumont.com/posts/ocaml-ctypes/
+*  https://github.com/simonjbeaumont/ocaml-pci
+*  https://github.com/simonjbeaumont/ocaml-flock
+*  https://ocaml.io/w/Ctypes#Static_and_dynamic_binding_strategies
+
+The idea is to create a functor which defines the bindings, use this functor
+with the `Cstubs` functions in order to generate the C code and the corresponding
+ocaml code.
+
+#### The Bindings functor
+
+```ocaml
+open Ctypes
+
+module Bindings (F : Cstubs.FOREIGN) = struct
+  open F
+  let eina_bool =
+    view ~read:((<>) 0) ~write:(fun b -> compare b false) int
+
+  let ecore_main_loop_begin =
+    foreign "ecore_main_loop_begin" (void @-> returning void)
+  let ecore_main_loop_quit =
+    foreign "ecore_main_loop_quit" (void @-> returning void)
+  let ecore_evas_init =
+    foreign "ecore_evas_init" (void @-> returning eina_bool)
+  let ecore_evas_shutdown =
+    foreign "ecore_evas_shutdown" (void @-> returning eina_bool)
+
+  type ecore_evas = unit ptr
+  let ecore_evas : ecore_evas typ = ptr void
+
+  let ecore_evas_new =
+    foreign "ecore_evas_new" (string_opt @-> int @-> int @-> int @-> int @-> string_opt @-> returning ecore_evas)
+
+  let ecore_evas_title_set =
+    foreign "ecore_evas_title_set" (ecore_evas @-> string_opt @-> returning void)
+
+  let ecore_evas_show =
+    foreign "ecore_evas_show" (ecore_evas @-> returning void)
+
+  let ecore_evas_free =
+    foreign "ecore_evas_free" (ecore_evas @-> returning void)
+
+  let ecore_evas_alpha_set =
+    foreign "ecore_evas_alpha_set" (ecore_evas @-> eina_bool @-> returning void)
+end
+```
+Nothing fancy here, I just put the previous code in a functor.
+
+#### The stubs generator
+
+Now we will use this functor in order to generate the C or OCaml code.
+
+```ocaml
+let _ =
+  let prefix = "ecore_evas_stubs" in
+  let generate_ml, generate_c = ref false, ref false in
+  Arg.(parse [ ("-ml", Set generate_ml, "Generate ML");
+                ("-c", Set generate_c, "Generate C") ])
+    (fun _ -> failwith "unexpected anonymous argument")
+    "stubgen [-ml|-c]";
+  match !generate_ml, !generate_c with
+  | false, false
+  | true, true ->
+    failwith "Exactly one of -ml and -c must be specified"
+  | true, false ->
+    Cstubs.write_ml Format.std_formatter ~prefix (module Ecore_evas.Bindings)
+  | false, true ->
+      print_endline "#include <Ecore.h>\n#include <Ecore_Evas.h>";
+    Cstubs.write_c Format.std_formatter ~prefix (module Ecore_evas.Bindings)
+```
+
+This program is simple, it takes one argument that can be `-ml` or `-c`.
+
+#### Compiling the bindings
+
+#### Using the static bindings
+
+#### Build static bindings with myocamlbuild.ml
