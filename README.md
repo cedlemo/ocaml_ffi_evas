@@ -5,9 +5,27 @@ the book Real World OCaml, the authors use the library NCurse as example.
 
 Here I use Ecore / Evas from the [Enlightenment Libraries](https://www.enlightenment.org/) know as E.F.L.
 
-## Presentation of the C library.
+## Table of content
 
-### The C functions to use :
+* [Presentation of the C library](#presentation-of-the-c-library)
+  *  [The C functions to use](#the-c-functions-to-use)
+  *  [The code to reproduce](#the-code-to-reproduce)
+* [Create the OCaml bindings](#create-the-ocaml-bindings)
+  * [The Ecore_evas module: simple implementation](#the-ecore-evas-module-:-simple-implementation)
+  * [The main OCaml file](#the-main-ocaml-file)
+  * [The Ecore_evas module: a more subtle implementation](#the-ecore_evas-module:-a-more-subtle-implementation)
+    * [The string_opt type](#the-string_opt-type)
+    * [Create a view for a bool type](#create-a-view-for-a-bool-type)
+  * [The Ecore_evas module: C stubs generation and static bindings](#the-ecore_evas-module:-c-stubs-generation-and-static-bindings)
+    * [The bindings functor](#the-bindings-functor)
+    * [The stubs generator](#the-stubs-generator)
+    * [Compiling the bindings](#compiling-the-bindings)
+    * [Using the static bindings](#using-the-static-bindings)
+    * [Build static bindings with myocamlbuild.ml](#build-static-bindings-with-myocamlbuild.ml)
+
+## Presentation of the C library
+
+### The C functions to use
 
   * void ecore_main_loop_quit(void)
   * void ecore_main_loop_begin(void)
@@ -59,7 +77,7 @@ int main(int argc, char **argv)
 }
 ```
 
-## Create the OCaml bindings:
+## Create the OCaml bindings
 
 ###  The Ecore_evas module : simple implementation
 
@@ -100,7 +118,7 @@ corebuild -pkg ctypes.foreign ecore_evas.inferred.mli
 cp _build/ecore_evas.inferred.mli ./
 ```
 
-#### The main ocaml file
+### The main OCaml file
 
 ```ocaml
 open Ecore_evas
@@ -132,9 +150,9 @@ corebuild -pkg ctypes.foreign -lflags -cclib,-lecore_evas -lflags -cclib,-lecore
 ./ecore_evas_window.native
 ```
 
-### The Ecore_evas module :  a more subtle implementation:
+### The Ecore_evas module: a more subtle implementation:
 
-#### the string_opt type
+#### The string_opt type
 
 Previously when I needed to pass a C `char *` I used in the OCaml bindings both
 `char ptr` and `string`. That is because I wanted to use Null pointers in the
@@ -212,7 +230,7 @@ It exits an internal bool representation :
 *  https://github.com/ocamllabs/ocaml-ctypes/issues/24
 *  https://github.com/ocamllabs/ocaml-ctypes/commit/d662070db22b99c74879c01da8db54bedc270e8b
 
-### The Ecore_evas module: C stubs generation and static bindings.
+### The Ecore_evas module: C stubs generation and static bindings
 
 resources :
 *  http://simonjbeaumont.com/posts/ocaml-ctypes/
