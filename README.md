@@ -16,6 +16,7 @@ Here I use Ecore / Evas from the [Enlightenment Libraries](https://www.enlighten
   * [The Ecore_evas module: a more subtle implementation](#the-ecore_evas-module:-a-more-subtle-implementation)
     * [The string_opt type](#the-string_opt-type)
     * [Create a view for a bool type](#create-a-view-for-a-bool-type)
+    * [Manage C function pointers](#manage-c-functions-pointers)
   * [The Ecore_evas module: C stubs generation and static bindings](#the-ecore_evas-module:-c-stubs-generation-and-static-bindings)
     * [The bindings functor](#the-bindings-functor)
     * [The stubs generator](#the-stubs-generator)
@@ -229,6 +230,81 @@ let ecore_evas_alpha_set =
 It exits an internal bool representation :
 *  https://github.com/ocamllabs/ocaml-ctypes/issues/24
 *  https://github.com/ocamllabs/ocaml-ctypes/commit/d662070db22b99c74879c01da8db54bedc270e8b
+
+#### Manage C function pointers
+
+As an example, I will implement with `CTypes` this function:
+
+```c
+EAPI void ecore_evas_callback_delete_request_set(Ecore_Evas *ee,
+						 Ecore_Evas_Event_Cb func)
+```
+It sets a callback for `Ecore_Evas` delete request events. Basicly when a user
+hit the close button in the title bar of a window, it generates this kind of
+event.
+
+*  Parameters
+  *  ee	The Ecore_Evas to set callbacks on
+  *  func	The function to call
+
+In our module, we first implement the callback as a new type:
+
+```ocaml
+let ecore_evas_event_cb = ecore_evas @-> returning void
+```
+It means that `ecore_evas_event_cb` is an OCaml function that takes one
+parameters and that returns nothing.
+
+Then we can use this type in the foreign description:
+
+```ocaml
+let ecore_evas_callback_delete_request_set =
+  foreign "ecore_evas_callback_delete_request_set" (ecore_evas @-> funptr ecore_evas_event_cb @-> returning void)
+```
+Here I define an OCaml function `ecore_evas_callback_delete_request_set` that
+needs two parameters , one of the type `ecore_evas` and one OCaml function that will be
+transformed in a C function pointer thanks to funptr.
+
+In the following OCaml code, I use this callback:
+
+```ocaml
+let delete_event_cb ee =
+  print_endline "Bye Bye";
+  ecore_main_loop_quit ()
+```
+In order to print a message and exit the main loop when a delete event appears.
+
+Here is the full working code:
+
+```ocaml
+open Ecore_evas
+(* compile with:
+  * corebuild -pkg ctypes.foreign -lflags -cclib,-lecore_evas -lflags -cclib,-lecore ecore_evas_window.native
+  *)
+open Ctypes
+let initialize_subsystem () =
+  if (ecore_evas_init () != false) then
+    print_endline "Ecore Evas initialized"
+  else
+    print_endline "Unable to initialize Ecore Evas system"
+
+let delete_event_cb ee =
+  print_endline "Bye Bye";
+  ecore_main_loop_quit ()
+
+let  () =
+  initialize_subsystem ();
+  print_endline "Creating ee";
+  let ee = ecore_evas_new None 50 50 300 300 None in
+  ecore_evas_title_set ee (Some "This is a test");
+  ecore_evas_alpha_set ee true;
+  ecore_evas_callback_delete_request_set ee delete_event_cb;
+  print_endline "Showing ee";
+  ecore_evas_show ee;
+  ecore_main_loop_begin ();
+  ecore_evas_free ee;
+  ignore(ecore_evas_shutdown ())
+```
 
 ### The Ecore_evas module: C stubs generation and static bindings
 
